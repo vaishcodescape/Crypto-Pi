@@ -1,0 +1,1 @@
+#Crypto-Pi main script
