@@ -3,16 +3,12 @@ import time
 import sys
 import colorama
 import smtplib
-import getpass
 import requests
 import os
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from config import EMAIL_CONFIG, COINGECKO_API_URL
-# from config import TWILIO_API_KEY
-
-import twilio
+from config import EMAIL_CONFIG
 
 from colorama import init, Fore, Back, Style
 
@@ -210,17 +206,157 @@ def crypto_prices():
     
     print(f"{Fore.YELLOW}{'=' * 40}{Style.RESET_ALL}\n")
 
-def check_status(currency):
-    # Placeholder for check_status function
-    pass
+def check_status(currency, phone_number, threshold):
+    """
+    Monitor cryptocurrency price and send email and SMS notifications for profit/loss
+    Args:
+        currency (str): Cryptocurrency symbol
+        phone_number (str): User's phone number
+        threshold (float): Price change threshold percentage
+    """
+    api = CryptoPriceAPI()
+    notifier = EmailNotifier()
+    
+    # Get initial price as reference
+    initial_price = api.get_price(currency)
+    if initial_price is None:
+        print(f"{Fore.RED}Failed to get initial price for {currency}. Please try again later.{Style.RESET_ALL}")
+        return
+    
+    print(f"{Fore.GREEN}Monitoring {currency} price. Initial price: ${initial_price:,.2f}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Alert threshold set at {threshold}%{Style.RESET_ALL}")
+    
+    while True:
+        try:
+            # Get current price
+            current_price = api.get_price(currency)
+            if current_price is None:
+                print(f"{Fore.RED}Failed to get current price for {currency}. Retrying...{Style.RESET_ALL}")
+                time.sleep(60)  # Wait 1 minute before retrying
+                continue
+            
+            # Calculate price change percentage
+            price_change = ((current_price - initial_price) / initial_price) * 100
+            
+            # Check for significant changes based on user's threshold
+            if abs(price_change) >= threshold:
+                # Determine if it's profit or loss
+                status = "PROFIT" if price_change > 0 else "LOSS"
+                color = Fore.GREEN if price_change > 0 else Fore.RED
+                
+                # Prepare email content
+                subject = f"Crypto-Pi Alert: {currency} {status}"
+                content = f"""
+                Hello Crypto-Pi User,
+                
+                Your monitored cryptocurrency {currency} has shown a significant {status.lower()}!
+                
+                Initial Price: ${initial_price:,.2f}
+                Current Price: ${current_price:,.2f}
+                Price Change: {color}{price_change:+.2f}%{Style.RESET_ALL}
+                Threshold: {threshold}%
+                
+                Stay informed and trade wisely!
+                
+                Best regards,
+                Crypto-Pi Team
+                """
+                
+                # Send email notification
+                email_sent = notifier.send_notification(EMAIL_CONFIG['sender_email'], subject, content)
+                
+                # Send SMS notification
+                sms_sent = send_crypto_alert_sms(phone_number, currency, status, initial_price, current_price, price_change)
+                
+                if email_sent or sms_sent:
+                    print(f"{Fore.GREEN}Notifications sent for {currency} {status}!{Style.RESET_ALL}")
+                    # Update initial price to current price for next comparison
+                    initial_price = current_price
+                else:
+                    print(f"{Fore.RED}Failed to send notifications.{Style.RESET_ALL}")
+            
+            # Wait for 5 minutes before next check
+            time.sleep(300)
+            
+        except KeyboardInterrupt:
+            print(f"\n{Fore.YELLOW}Stopping price monitoring...{Style.RESET_ALL}")
+            break
+        except Exception as e:
+            print(f"{Fore.RED}Error in price monitoring: {str(e)}{Style.RESET_ALL}")
+            time.sleep(60)  # Wait 1 minute before retrying
 
 def send_email(email):
     notifier = EmailNotifier()
     notifier.send_crypto_alert(email, type_curr)
 
 def send_sms(phn_number):
-    # Placeholder for send_sms function
-    pass
+    """
+    Send SMS notification using TextBelt API
+    Args:
+        phn_number (str): Recipient's phone number with country code
+    """
+    try:
+        # Format the message
+        message = f"""
+        Crypto-Pi Alert!
+        You have successfully set up price alerts for {type_curr}.
+        You will receive notifications when the price reaches your desired target.
+        Stay tuned for updates!
+        """
+        
+        # Send SMS using TextBelt API
+        response = requests.post('https://textbelt.com/text', {
+            'phone': str(phn_number),
+            'message': message,
+            'key': 'textbelt_test',  # Use 'textbelt_test' for testing (1 free message per day)
+        })
+        
+        result = response.json()
+        
+        if result['success']:
+            print(f"{Fore.GREEN}SMS notification sent successfully!{Style.RESET_ALL}")
+            return True
+        else:
+            print(f"{Fore.RED}Failed to send SMS: {result['error']}{Style.RESET_ALL}")
+            return False
+            
+    except Exception as e:
+        print(f"{Fore.RED}Error sending SMS: {str(e)}{Style.RESET_ALL}")
+        return False
+
+def send_crypto_alert_sms(phn_number, currency, status, initial_price, current_price, price_change):
+    """
+    Send SMS alert for cryptocurrency price changes
+    """
+    try:
+        message = f"""
+        Crypto-Pi Alert: {currency} {status}
+        
+        Initial Price: ${initial_price:,.2f}
+        Current Price: ${current_price:,.2f}
+        Price Change: {price_change:+.2f}%
+        
+        Stay informed and trade wisely!
+        """
+        
+        response = requests.post('https://textbelt.com/text', {
+            'phone': str(phn_number),
+            'message': message,
+            'key': 'textbelt_test',  # Use 'textbelt_test' for testing (1 free message per day)
+        })
+        
+        result = response.json()
+        
+        if result['success']:
+            print(f"{Fore.GREEN}SMS alert sent successfully!{Style.RESET_ALL}")
+            return True
+        else:
+            print(f"{Fore.RED}Failed to send SMS alert: {result['error']}{Style.RESET_ALL}")
+            return False
+            
+    except Exception as e:
+        print(f"{Fore.RED}Error sending SMS alert: {str(e)}{Style.RESET_ALL}")
+        return False
 
 def print_banner():
     # Each line should be 70 characters wide (including borders)
@@ -318,21 +454,17 @@ def main():
             time.sleep(1)
             list_cryptocurrencies()
 
-    # Display real-time prices
-    print_section("REAL-TIME PRICES")
+    # Get price change threshold
     while True:
-        choice = input(f"{Fore.YELLOW}Would you like to see real-time prices? (yes/no): {Style.RESET_ALL}").lower()
-        if choice in ['yes', 'y']:
-            print(f"\n{Fore.GREEN}Starting real-time price updates...{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}Updates will refresh every 10 seconds.{Style.RESET_ALL}")
-            time.sleep(2)
-            display_real_time_prices()
-            break
-        elif choice in ['no', 'n']:
-            crypto_prices()
-            break
-        else:
-            print(f"{Fore.RED}Invalid choice. Please enter 'yes' or 'no'.{Style.RESET_ALL}")
+        try:
+            threshold = float(input(f"{Fore.YELLOW}Enter the price change threshold percentage (e.g., 5 for 5%): {Style.RESET_ALL}"))
+            if threshold > 0:
+                print(f"{Fore.GREEN}Threshold set at {threshold}%{Style.RESET_ALL}")
+                break
+            else:
+                print(f"{Fore.RED}Please enter a positive number.{Style.RESET_ALL}")
+        except ValueError:
+            print(f"{Fore.RED}Invalid input. Please enter a number.{Style.RESET_ALL}")
 
     # Get contact information
     print_section("CONTACT INFORMATION")
@@ -356,10 +488,13 @@ def main():
     print_section("SENDING NOTIFICATIONS")
     send_email(email)
     send_sms(phn_number)
+    
+    # Start monitoring
+    check_status(type_curr, phn_number, threshold)
 
     # Final messages
     print_section("SETUP COMPLETE")
-    print(f"{Fore.GREEN}You will be notified via email and SMS when the price of {type_curr} reaches your desired price.{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}You will be notified via email and SMS when the price of {type_curr} changes by {threshold}% or more.{Style.RESET_ALL}")
     print(f"{Fore.YELLOW}Until then, trade wisely!{Style.RESET_ALL}")
 
     print_section("THANK YOU")
