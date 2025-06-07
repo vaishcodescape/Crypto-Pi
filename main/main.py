@@ -1,31 +1,30 @@
 #Crypto-Pi main script
 import time
 import sys
+import colorama
+from colorama import init, Fore, Back, Style
 
-#List of top-10 Cryptocurrenicies in the Crypto Market
+# Initialize colorama
+init()
+
 def list_cryptocurrencies():
-    
     cryptocurrencies = [
-    {"symbol": "BTC", "name": "Bitcoin"},
-    {"symbol": "ETH", "name": "Ethereum"},
-    {"symbol": "BNB", "name": "Binance Coin"},
-    {"symbol": "SOL", "name": "Solana"},
-    {"symbol": "XRP", "name": "XRP (Ripple)"},
-    {"symbol": "ADA", "name": "Cardano"},
-    {"symbol": "DOGE", "name": "Dogecoin"},
-    {"symbol": "AVAX", "name": "Avalanche"},
-    {"symbol": "DOT", "name": "Polkadot"},
-    {"symbol": "MATIC", "name": "Polygon"}
-]
+        {"symbol": "BTC", "name": "Bitcoin"},
+        {"symbol": "ETH", "name": "Ethereum"},
+        {"symbol": "BNB", "name": "Binance Coin"},
+        {"symbol": "SOL", "name": "Solana"},
+        {"symbol": "XRP", "name": "XRP (Ripple)"},
+        {"symbol": "ADA", "name": "Cardano"},
+        {"symbol": "DOGE", "name": "Dogecoin"},
+        {"symbol": "AVAX", "name": "Avalanche"},
+        {"symbol": "DOT", "name": "Polkadot"},
+        {"symbol": "MATIC", "name": "Polygon"}
+    ]
+    print(f"\n{Fore.CYAN}Available Cryptocurrencies:{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}{'=' * 40}{Style.RESET_ALL}")
     for coin in cryptocurrencies:
-        print(f"{coin['symbol']}:{coin['name']}")
-        
-def loading_animation():
-    for i in range(3):
-        sys.stdout.write("\rloading" + "." * (i + 1))
-        sys.stdout.flush()
-        time.sleep(0.5)
-    print("\rloading...")
+        print(f"{Fore.GREEN}• {coin['symbol']}{Style.RESET_ALL}: {Fore.WHITE}{coin['name']}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}{'=' * 40}{Style.RESET_ALL}\n")
 
 def check_status(currency):
     # Placeholder for check_status function
@@ -39,61 +38,81 @@ def send_sms(phn_number):
     # Placeholder for send_sms function
     pass
 
-print("""
-  _______  _______           _______ _________ _______    _______ _________
- (  ____ \\(  ____ )|\\     /|(  ____ )\\__   __/(  ___  )  (  ____ )\\__   __/
- | (    \\/| (    )|( \\   / )| (    )|   ) (   | (   ) |  | (    )|   ) (   
- | |      | (____)| \\ (_) / | (____)|   | |   | |   | |  | (____)|   | |   
- | |      |     __)  \\   /  |  _____)   | |   | |   | |  |  _____)   | |   
- | |      | (\\ (      ) (   | (         | |   | |   | |  | (         | |   
- | (____/\\| ) \\ \\__   | |   | )         | |   | (___) |  | )      ___) (___
- (_______/|/   \\__/   \\_/   |/          )_(   (_______)  |/       \\_______/
-""")
+def print_banner():
+    # Each line should be 70 characters wide (including borders)
+    banner_lines = [
+        f"{Fore.CYAN}╔{'═'*68}╗{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{' '*68}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}   ******                            **                  *******  ** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}  **////**         **   ** ******   /**                 /**////**/** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW} **    //  ****** //** ** /**///** ******  ******       /**   /**/** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}/**       //**//*  //***  /**  /**///**/  **////** *****/******* /** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}/**        /** /    /**   /******   /**  /**   /**///// /**////  /** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}//**    ** /**      **    /**///    /**  /**   /**      /**      /** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW} //****** /***     **     /**       //** //******       /**      /** {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{Fore.YELLOW}  //////  ///     //      //         //   //////        //       //  {Fore.CYAN}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}║{' '*68}║{Style.RESET_ALL}",
+        f"{Fore.CYAN}╚{'═'*68}╝{Style.RESET_ALL}"
+    ]
+    print("\n".join(banner_lines))
 
+def loading_animation():
+    print(f"\n{Fore.YELLOW}Initializing Crypto-Pi...{Style.RESET_ALL}")
+    for i in range(3):
+        sys.stdout.write(f"\r{Fore.GREEN}Loading{Style.RESET_ALL}" + "." * (i + 1))
+        sys.stdout.flush()
+        time.sleep(0.5)
+    print(f"\r{Fore.GREEN}Loading complete!{Style.RESET_ALL}\n")
 
+def print_section(title):
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{title.center(60)}")
+    print(f"{'=' * 60}{Style.RESET_ALL}\n")
+
+# Main program flow
+print_banner()
 loading_animation()
 
+print_section("CRYPTOCURRENCY SELECTION")
 print("Here's a list of top cryptocurrencies:")
-
-list_cryptocurrencies()  
-time.sleep(2)  
+list_cryptocurrencies()
 
 while True:
-    currency = input("Enter the Crypto Currency Status you would like to notify yourself e.g BTC,ETH:")
-    type_curr = currency
+    currency = input(f"{Fore.YELLOW}Enter the Crypto Currency Status you would like to notify yourself (e.g., BTC, ETH): {Style.RESET_ALL}")
+    type_curr = currency.upper()
 
     if type_curr == "BTC":
-        print("You selected Bitcoin.")
+        print(f"{Fore.GREEN}You selected Bitcoin.{Style.RESET_ALL}")
         break
     elif type_curr == "ETH":
-        print("You selected Ethereum.")
+        print(f"{Fore.GREEN}You selected Ethereum.{Style.RESET_ALL}")
         break
     elif type_curr == "BNB":
-        print("You selected Binance Coin.")
+        print(f"{Fore.GREEN}You selected Binance Coin.{Style.RESET_ALL}")
         break
     elif type_curr == "SOL":
-        print("You selected Solana.")
+        print(f"{Fore.GREEN}You selected Solana.{Style.RESET_ALL}")
         break
     elif type_curr == "XRP":
-        print("You selected XRP (Ripple).")
+        print(f"{Fore.GREEN}You selected XRP (Ripple).{Style.RESET_ALL}")
         break
     elif type_curr == "ADA":
-        print("You selected Cardano.")
+        print(f"{Fore.GREEN}You selected Cardano.{Style.RESET_ALL}")
         break
     elif type_curr == "DOGE":
-        print("You selected Dogecoin.")
+        print(f"{Fore.GREEN}You selected Dogecoin.{Style.RESET_ALL}")
         break
     elif type_curr == "AVAX":
-        print("You selected Avalanche.")
+        print(f"{Fore.GREEN}You selected Avalanche.{Style.RESET_ALL}")
         break
     elif type_curr == "DOT":
-        print("You selected Polkadot.")
+        print(f"{Fore.GREEN}You selected Polkadot.{Style.RESET_ALL}")
         break
     elif type_curr == "MATIC":
-        print("You selected Polygon.")
+        print(f"{Fore.GREEN}You selected Polygon.{Style.RESET_ALL}")
         break
     else:
-        print("Invalid cryptocurrency symbol.")
+        print(f"{Fore.RED}Invalid cryptocurrency symbol.{Style.RESET_ALL}")
         print("Please try again.")
         time.sleep(2)
         print("Here's a list of top cryptocurrencies:")
@@ -102,29 +121,36 @@ while True:
 
 check_status(type_curr)
 
+print_section("CONTACT INFORMATION")
 while True:
-    email = input("Enter your email address:")
+    email = input(f"{Fore.YELLOW}Enter your email address: {Style.RESET_ALL}")
     if '@' in email and '.' in email:
+        print(f"{Fore.GREEN}Email address accepted!{Style.RESET_ALL}")
         break
     else:
-        print("Invalid email address. Please try again.")
+        print(f"{Fore.RED}Invalid email address. Please try again.{Style.RESET_ALL}")
 
 while True:
     try:
-        phn_number = int(input("Enter your phone number with COUNTRY CODE!:"))
+        phn_number = int(input(f"{Fore.YELLOW}Enter your phone number with COUNTRY CODE: {Style.RESET_ALL}"))
+        print(f"{Fore.GREEN}Phone number accepted!{Style.RESET_ALL}")
         break
     except ValueError:
-        print("Invalid phone number. Please enter a valid number.")
+        print(f"{Fore.RED}Invalid phone number. Please enter a valid number.{Style.RESET_ALL}")
 
 send_email(email)
 send_sms(phn_number)
 
 loading_animation()
 
-print("You shall be notified via email and SMS when the price of the selected cryptocurrency reaches your desired price till then trade wisely.")
-print("--------------------------------")
-print("Thank you for using Crypto-Pi. Have a great day!")
-print("To run the program again, type 'python main.py in your terminal'")
+print_section("SETUP COMPLETE")
+print(f"{Fore.GREEN}You shall be notified via email and SMS when the price of {type_curr} reaches your desired price.{Style.RESET_ALL}")
+print(f"{Fore.YELLOW}Until then, trade wisely!{Style.RESET_ALL}")
 
-print("Made by:@vaishcodescape follow me on github https://github.com/vaishcodescape")
-print("--------------------------------")
+print_section("THANK YOU")
+print(f"{Fore.CYAN}Thank you for using Crypto-Pi. Have a great day!{Style.RESET_ALL}")
+print(f"{Fore.YELLOW}To run the program again, type 'python main.py' in your terminal{Style.RESET_ALL}")
+
+print_section("CREDITS")
+print(f"{Fore.GREEN}Made by: @vaishcodescape{Style.RESET_ALL}")
+print(f"{Fore.BLUE}Follow me on GitHub: https://github.com/vaishcodescape{Style.RESET_ALL}")
