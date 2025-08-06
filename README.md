@@ -55,7 +55,7 @@ python main/main.py
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests!
+This repository is Open Source Feel free to submit issues and enhancement requests!
 
 ## License
 
