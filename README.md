@@ -1,7 +1,5 @@
 # Crypto-Pi
 
-Crypto-Pi is a Python automation script that monitors the crypto market and sends notifications when cryptocurrency prices reach specified thresholds.
-
 ## Features
 
 - Monitor multiple cryptocurrencies (BTC, ETH, BNB, SOL, XRP, ADA, DOGE, AVAX, DOT, MATIC)
